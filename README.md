@@ -1,2 +1,3 @@
-# libgeance
-Libgeance – Fashion E-Commerce Platform
+# ETII Commerce Hub
+
+A modern fashion e-commerce platform built with Next.js.
