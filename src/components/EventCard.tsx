@@ -26,7 +26,7 @@ export default function EventCard({ event }: Props) {
     <div className="px-4 sm:px-6 my-2">
       <div
         className="relative overflow-hidden rounded-2xl cursor-pointer group"
-        style={{ width: "90%", maxWidth: "900px", margin: "0 auto", height: "180px" }}
+        style={{ width: "95%", maxWidth: "1000px", margin: "0 auto", height: "260px" }}
         onClick={() => event.ctaLink && router.push(event.ctaLink)}
       >
         {/* Background image */}
@@ -44,24 +44,24 @@ export default function EventCard({ event }: Props) {
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
 
         {/* Content */}
-        <div className="relative z-10 h-full flex flex-col justify-center px-6 sm:px-8 gap-2">
+        <div className="relative z-10 h-full flex flex-col justify-center px-8 sm:px-12 gap-3">
           {event.badge && (
-            <span className="inline-flex self-start text-[9px] font-bold tracking-[0.2em] uppercase bg-white/20 backdrop-blur-sm text-white border border-white/30 px-2.5 py-1 rounded-full">
+            <span className="inline-flex self-start text-[10px] font-bold tracking-[0.2em] uppercase bg-white/20 backdrop-blur-sm text-white border border-white/30 px-3 py-1.5 rounded-full">
               {event.badge}
             </span>
           )}
           <div>
-            <h3 className="font-display text-xl sm:text-2xl font-bold text-white leading-tight">{event.title}</h3>
+            <h3 className="font-display text-2xl sm:text-3xl font-bold text-white leading-tight">{event.title}</h3>
             {event.subtitle && (
-              <p className="text-sm text-white/70 mt-0.5 font-light">{event.subtitle}</p>
+              <p className="text-base text-white/70 mt-1 font-light">{event.subtitle}</p>
             )}
           </div>
           {event.description && (
-            <p className="text-xs text-white/60 max-w-xs leading-relaxed hidden sm:block line-clamp-2">{event.description}</p>
+            <p className="text-sm text-white/60 max-w-sm leading-relaxed hidden sm:block line-clamp-2">{event.description}</p>
           )}
           {event.ctaLabel && (
-            <button className="inline-flex self-start items-center gap-1.5 text-xs font-bold text-white border border-white/40 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-full mt-1">
-              {event.ctaLabel} <ArrowRight className="w-3 h-3" />
+            <button className="inline-flex self-start items-center gap-2 text-sm font-bold text-white border border-white/40 hover:bg-white/20 transition-colors px-4 py-2 rounded-full mt-1">
+              {event.ctaLabel} <ArrowRight className="w-4 h-4" />
             </button>
           )}
         </div>
