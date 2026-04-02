@@ -1,6 +1,5 @@
 "use client";
 
-import IntroAnimation from "@/components/IntroAnimation";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import FeaturedCategories from "@/components/FeaturedCategories";
@@ -11,8 +10,7 @@ import { Toaster } from "sonner";
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
-      <IntroAnimation />
+    <div className="min-h-screen pb-20">
       <Navbar />
       <Hero />
       <FeaturedCategories />

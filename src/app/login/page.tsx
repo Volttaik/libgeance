@@ -42,16 +42,32 @@ export default function LoginPage() {
       <Navbar />
       <div className="flex items-center justify-center min-h-screen pt-16 px-4">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
           className="w-full max-w-md"
         >
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-                <span className="font-display font-bold text-primary-foreground text-base leading-none">LG</span>
-              </div>
+              <svg width="28" height="38" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.18))" }}>
+                <defs>
+                  <linearGradient id="lg-t" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#3a3a3a"/><stop offset="100%" stopColor="#1a1a1a"/></linearGradient>
+                  <linearGradient id="lg-lc" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#6a6a6a"/><stop offset="100%" stopColor="#4a4a4a"/></linearGradient>
+                  <linearGradient id="lg-rc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#121212"/><stop offset="100%" stopColor="#0a0a0a"/></linearGradient>
+                  <linearGradient id="lg-ll" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#888"/><stop offset="100%" stopColor="#666"/></linearGradient>
+                  <linearGradient id="lg-lr" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#444"/><stop offset="100%" stopColor="#2a2a2a"/></linearGradient>
+                  <linearGradient id="lg-pl" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#aaa"/><stop offset="100%" stopColor="#888"/></linearGradient>
+                  <linearGradient id="lg-pr" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#555"/><stop offset="100%" stopColor="#333"/></linearGradient>
+                </defs>
+                <polygon points="150,15 65,108 235,108" fill="url(#lg-t)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.8"/>
+                <polygon points="150,15 5,195 65,108" fill="url(#lg-lc)" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8"/>
+                <polygon points="150,15 235,108 295,195" fill="url(#lg-rc)" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8"/>
+                <polygon points="65,108 5,195 150,195" fill="url(#lg-ll)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.6"/>
+                <polygon points="235,108 150,195 295,195" fill="url(#lg-lr)" stroke="rgba(255,255,255,0.15)" strokeWidth="0.6"/>
+                <polygon points="5,195 150,395 150,195" fill="url(#lg-pl)" stroke="rgba(255,255,255,0.06)" strokeWidth="0.6"/>
+                <polygon points="150,195 150,395 295,195" fill="url(#lg-pr)" stroke="rgba(255,255,255,0.1)" strokeWidth="0.6"/>
+                <polyline points="150,15 295,195 150,395" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="150" y1="15" x2="235" y2="108" stroke="rgba(255,255,255,0.45)" strokeWidth="1.4"/>
+              </svg>
               <span className="font-display text-2xl font-bold tracking-tight text-foreground" style={{ letterSpacing: "-0.02em" }}>Libgeance</span>
             </div>
             <h1 className="font-display text-3xl font-light italic">Welcome back</h1>
