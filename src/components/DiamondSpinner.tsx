@@ -31,19 +31,21 @@ export default function DiamondSpinner({ size = 120, speed = 0.02, spinning = tr
     camera.lookAt(0, -0.1, 0);
 
     /* ── Materials ── */
-    // White/bright material for the crown (upper pointed half)
+    // Dark charcoal base so unlit faces are deep black/dark
+    // flatShading means each triangular face gets one solid colour —
+    // faces angled toward a bright light go near-white (specular),
+    // away from lights stay charcoal/black, giving strong contrast.
     const crownMat = new THREE.MeshPhongMaterial({
-      color: new THREE.Color(0xfafafa),
+      color: new THREE.Color(0x1c1c1c),
       specular: new THREE.Color(0xffffff),
-      shininess: 900,
+      shininess: 600,
       flatShading: true,
     });
 
-    // Slightly darker material for girdle + pavilion (lower half)
     const pavilionMat = new THREE.MeshPhongMaterial({
-      color: new THREE.Color(0xd8d8d8),
+      color: new THREE.Color(0x141414),
       specular: new THREE.Color(0xffffff),
-      shininess: 700,
+      shininess: 500,
       flatShading: true,
     });
 
