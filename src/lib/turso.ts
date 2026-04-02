@@ -1,9 +1,16 @@
 import { createClient } from "@libsql/client";
 import path from "path";
 
-export const db = createClient({
-  url: `file:${path.join(process.cwd(), "libgeance.db")}`,
-});
+export const db = createClient(
+  process.env.TURSO_DATABASE_URL
+    ? {
+        url: process.env.TURSO_DATABASE_URL,
+        authToken: process.env.TURSO_AUTH_TOKEN,
+      }
+    : {
+        url: `file:${path.join(process.cwd(), "libgeance.db")}`,
+      }
+);
 
 let initialized = false;
 
