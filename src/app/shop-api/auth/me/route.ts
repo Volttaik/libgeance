@@ -11,9 +11,19 @@ export async function GET(req: NextRequest) {
 
   const { data: user } = await supabase
     .from("users")
-    .select("id, fullName, email, phone")
+    .select("id, fullName, email, phone, avatar_url")
     .eq("id", payload.userId)
     .maybeSingle();
 
-  return NextResponse.json({ user });
+  if (!user) return NextResponse.json({ user: null });
+
+  return NextResponse.json({
+    user: {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone,
+      avatarUrl: user.avatar_url ?? null,
+    },
+  });
 }

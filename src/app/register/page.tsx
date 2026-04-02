@@ -1,21 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Camera } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/db";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "", confirmPassword: "" });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { setUser } = useAuth();
   const router = useRouter();
 
-  const handleChange = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const handleChange = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const uploadAvatar = async (file: File, userId?: number): Promise<string | null> => {
+    const ext = file.name.split(".").pop();
+    const path = `avatars/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("uploads").upload(path, file, { upsert: true });
+    if (error) { console.error("Avatar upload error:", error); return null; }
+    const { data } = supabase.storage.from("uploads").getPublicUrl(path);
+    return data.publicUrl;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,10 +45,21 @@ export default function RegisterPage() {
     if (form.password.length < 6) { setError("Password must be at least 6 characters"); return; }
     setLoading(true);
     try {
+      let avatarUrl: string | null = null;
+      if (avatarFile) {
+        avatarUrl = await uploadAvatar(avatarFile);
+      }
+
       const res = await fetch("/shop-api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName: form.fullName, email: form.email, phone: form.phone, password: form.password }),
+        body: JSON.stringify({
+          fullName: form.fullName,
+          email: form.email,
+          phone: form.phone,
+          password: form.password,
+          avatarUrl,
+        }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Registration failed"); return; }
@@ -89,6 +121,37 @@ export default function RegisterPage() {
                 {error}
               </div>
             )}
+
+            {/* Avatar picker */}
+            <div className="flex flex-col items-center gap-2 pb-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="relative group w-20 h-20 rounded-full bg-secondary border-2 border-border hover:border-foreground/40 transition-colors overflow-hidden flex items-center justify-center"
+              >
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="Avatar preview" className="w-full h-full object-cover" />
+                ) : (
+                  <Camera className="w-6 h-6 text-muted-foreground group-hover:text-foreground transition-colors" />
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-full flex items-center justify-center">
+                  {avatarPreview && (
+                    <Camera className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                </div>
+              </button>
+              <p className="text-xs text-muted-foreground">
+                {avatarPreview ? "Tap to change photo" : "Add profile photo"}
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+            </div>
+
             {fields.map(({ key, label, type, placeholder }) => (
               <div key={key} className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">{label}</label>

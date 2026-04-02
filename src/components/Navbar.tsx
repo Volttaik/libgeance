@@ -1,13 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ShoppingBag, Search, Menu } from "lucide-react";
+import { ShoppingBag, Search, Menu, User } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 const navLinks = ["New In", "Women", "Men", "Accessories", "Sale"];
 
 export default function Navbar() {
   const { cartCount } = useCart();
+  const { user } = useAuth();
   const router = useRouter();
 
   return (
@@ -64,6 +66,26 @@ export default function Navbar() {
               </span>
             )}
           </button>
+
+          {/* Profile avatar */}
+          <button
+            onClick={() => router.push("/menu")}
+            className="p-1 rounded-full hover:bg-secondary transition-colors relative"
+            aria-label="Profile"
+          >
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.fullName}
+                className="w-7 h-7 rounded-full object-cover border border-black/10"
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-secondary border border-black/10 flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-foreground/60" />
+              </div>
+            )}
+          </button>
+
           <button onClick={() => router.push("/menu")} className="p-2 rounded-full hover:bg-secondary transition-colors md:hidden" aria-label="Menu">
             <Menu className="w-4 h-4" />
           </button>

@@ -7,6 +7,7 @@ type User = {
   fullName: string;
   email: string;
   phone: string;
+  avatarUrl: string | null;
 };
 
 type AuthContextType = {

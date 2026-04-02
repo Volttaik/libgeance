@@ -5,7 +5,7 @@ import { signToken } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    const { fullName, email, phone, password } = await req.json();
+    const { fullName, email, phone, password, avatarUrl } = await req.json();
 
     if (!fullName || !email || !phone || !password) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const { data: result, error } = await supabase
       .from("users")
-      .insert({ fullName, email, phone, password: hashedPassword })
+      .insert({ fullName, email, phone, password: hashedPassword, avatar_url: avatarUrl || null })
       .select("id")
       .single();
 
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     const token = signToken({ userId: result.id, email });
     const response = NextResponse.json({
-      user: { id: result.id, fullName, email, phone },
+      user: { id: result.id, fullName, email, phone, avatarUrl: avatarUrl || null },
     });
     response.cookies.set("auth_token", token, {
       httpOnly: true,

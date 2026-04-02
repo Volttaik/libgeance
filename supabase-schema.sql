@@ -4,11 +4,12 @@
 -- =====================================================================
 
 CREATE TABLE IF NOT EXISTS users (
-  id        BIGSERIAL PRIMARY KEY,
-  "fullName" TEXT NOT NULL,
-  email     TEXT UNIQUE NOT NULL,
-  phone     TEXT NOT NULL,
-  password  TEXT NOT NULL,
+  id          BIGSERIAL PRIMARY KEY,
+  "fullName"  TEXT NOT NULL,
+  email       TEXT UNIQUE NOT NULL,
+  phone       TEXT NOT NULL,
+  password    TEXT NOT NULL,
+  avatar_url  TEXT,
   "createdAt" TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -62,9 +63,20 @@ ALTER TABLE orders       DISABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items  DISABLE ROW LEVEL SECURITY;
 
 -- =====================================================================
--- STORAGE: Create the uploads bucket for product/category images
--- Run this separately if the bucket doesn't already exist:
+-- STORAGE: Create the uploads bucket for product/category/profile images
 -- =====================================================================
--- INSERT INTO storage.buckets (id, name, public)
--- VALUES ('uploads', 'uploads', true)
--- ON CONFLICT DO NOTHING;
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('uploads', 'uploads', true)
+ON CONFLICT DO NOTHING;
+
+-- Allow public read & authenticated uploads
+CREATE POLICY IF NOT EXISTS "Public read uploads" ON storage.objects
+  FOR SELECT USING (bucket_id = 'uploads');
+
+CREATE POLICY IF NOT EXISTS "Allow uploads" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'uploads');
+
+-- =====================================================================
+-- If your users table already exists, run this to add the avatar column:
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+-- =====================================================================
