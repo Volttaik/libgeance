@@ -18,6 +18,46 @@ type Product = {
 
 const suggestions = ["New arrivals", "Women", "Men", "Accessories", "Sale"];
 
+function ProductModal({ product, whatsappNumber, onClose }: { product: Product; whatsappNumber: string; onClose: () => void }) {
+  const { addToCart } = useCart();
+  const discountedPrice = product.discount > 0 ? product.price * (1 - product.discount / 100) : null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md p-6 flex flex-col gap-4" onClick={(e) => e.stopPropagation()}>
+        {product.image && <img src={product.image} alt={product.name} className="w-full h-56 object-cover rounded-2xl" />}
+        <div>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold mb-1">{product.category}</p>
+          <h2 className="font-display text-xl font-semibold">{product.name}</h2>
+          {product.description && <p className="text-sm text-muted-foreground mt-1">{product.description}</p>}
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-lg font-bold">₦{((discountedPrice ?? product.price) / 100).toLocaleString("en-NG")}</span>
+            {discountedPrice && <span className="text-sm text-muted-foreground line-through">₦{(product.price / 100).toLocaleString("en-NG")}</span>}
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => { addToCart({ id: product.id, name: product.name, price: product.price, image: product.image, category: product.category }); onClose(); }}
+            className="flex-1 flex items-center justify-center gap-2 bg-foreground text-background rounded-xl py-3 text-sm font-semibold hover:bg-foreground/80 transition-colors"
+          >
+            <ShoppingBag className="w-4 h-4" /> Add to Bag
+          </button>
+          {whatsappNumber && (
+            <a
+              href={`https://wa.me/${whatsappNumber}?text=Hi, I'm interested in ${encodeURIComponent(product.name)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 border border-foreground/20 rounded-xl px-4 py-3 text-sm font-semibold hover:bg-zinc-50 transition-colors"
+            >
+              Chat
+            </a>
+          )}
+        </div>
+        <button onClick={onClose} className="text-sm text-muted-foreground text-center hover:text-foreground transition-colors">Close</button>
+      </div>
+    </div>
+  );
+}
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -27,6 +67,15 @@ function SearchContent() {
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [modalProduct, setModalProduct] = useState<Product | null>(null);
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+
+  useEffect(() => {
+    fetch("/shop-api/settings")
+      .then((r) => r.json())
+      .then((data) => setWhatsappNumber(data.settings?.whatsapp_number || ""))
+      .catch(() => {});
+  }, []);
 
   const doSearch = useCallback(async (q: string) => {
     if (!q.trim()) { setResults([]); setSearched(false); return; }

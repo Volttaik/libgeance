@@ -18,7 +18,8 @@ type Product = {
 };
 
 export default function ProductPage() {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const router = useRouter();
   const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
