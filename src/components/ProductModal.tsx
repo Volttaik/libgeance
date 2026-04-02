@@ -78,7 +78,7 @@ export default function ProductModal({ product, whatsappNumber, onClose }: Props
         </button>
 
         {/* Image */}
-        <div className="relative bg-zinc-100 flex-shrink-0" style={{ height: "320px" }}>
+        <div className="relative bg-zinc-100 flex-shrink-0" style={{ height: "240px" }}>
           {product.image ? (
             <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
           ) : (
@@ -95,7 +95,7 @@ export default function ProductModal({ product, whatsappNumber, onClose }: Props
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto flex flex-col gap-4 p-5 pb-6">
+        <div className="overflow-y-auto flex-1 min-h-0 flex flex-col gap-4 p-5 pb-8" style={{ WebkitOverflowScrolling: "touch" }}>
           {/* Header */}
           <div>
             <div className="flex items-center gap-2 mb-1">
