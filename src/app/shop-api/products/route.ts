@@ -1,14 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/db";
+import { db, initDb } from "@/lib/turso";
+import { ADMIN_TOKEN } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const { data: products, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("createdAt", { ascending: false });
+    await initDb();
+    const { searchParams } = new URL(req.url);
+    const q = searchParams.get("q")?.trim() || "";
+    const category = searchParams.get("category")?.trim() || "";
 
-    if (error) throw error;
+    let sql = "SELECT * FROM products";
+    const args: string[] = [];
+    const conditions: string[] = [];
+
+    if (q) {
+      conditions.push("(name LIKE ? OR description LIKE ? OR category LIKE ?)");
+      args.push(`%${q}%`, `%${q}%`, `%${q}%`);
+    }
+    if (category) {
+      conditions.push("category = ?");
+      args.push(category);
+    }
+    if (conditions.length) sql += " WHERE " + conditions.join(" AND ");
+    sql += " ORDER BY createdAt DESC";
+
+    const result = await db.execute({ sql, args });
+    const products = result.rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      price: r.price,
+      description: r.description,
+      discount: r.discount,
+      image: r.image,
+      category: r.category,
+      createdAt: r.createdAt,
+    }));
     return NextResponse.json({ products });
   } catch (err) {
     console.error(err);
@@ -18,8 +44,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    await initDb();
     const adminToken = req.cookies.get("admin_token")?.value;
-    if (adminToken !== "etii_admin_session_2025") {
+    if (adminToken !== ADMIN_TOKEN) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -28,21 +55,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Name and price required" }, { status: 400 });
     }
 
-    const { data: product, error } = await supabase
-      .from("products")
-      .insert({
-        name,
-        price: Number(price) * 100,
-        description: description || "",
-        discount: Number(discount) || 0,
-        image: image || "",
-        category: category || "General",
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return NextResponse.json({ product }, { status: 201 });
+    const result = await db.execute({
+      sql: "INSERT INTO products (name, price, description, discount, image, category) VALUES (?, ?, ?, ?, ?, ?) RETURNING *",
+      args: [name, Number(price) * 100, description || "", Number(discount) || 0, image || "", category || "General"],
+    });
+    return NextResponse.json({ product: result.rows[0] }, { status: 201 });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { supabase } from "@/lib/db";
+import { db, initDb } from "@/lib/turso";
 import { signToken } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
+    await initDb();
     const { fullName, email, phone, password, avatarUrl } = await req.json();
 
     if (!fullName || !email || !phone || !password) {
@@ -14,37 +15,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
     }
 
-    const { data: existing } = await supabase
-      .from("users")
-      .select("id")
-      .eq("email", email)
-      .maybeSingle();
-
-    if (existing) {
+    const existing = await db.execute({ sql: "SELECT id FROM users WHERE email=?", args: [email] });
+    if (existing.rows.length > 0) {
       return NextResponse.json({ error: "Email already in use" }, { status: 409 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const { data: result, error } = await supabase
-      .from("users")
-      .insert({ fullName, email, phone, password: hashedPassword, avatar_url: avatarUrl || null })
-      .select("id")
-      .single();
+    const result = await db.execute({
+      sql: "INSERT INTO users (fullName, email, phone, password, avatar_url) VALUES (?, ?, ?, ?, ?) RETURNING id",
+      args: [fullName, email, phone, hashedPassword, avatarUrl || null],
+    });
+    const id = result.rows[0].id as number;
 
-    if (error || !result) {
-      console.error(error);
-      return NextResponse.json({ error: "Server error" }, { status: 500 });
-    }
-
-    const token = signToken({ userId: result.id, email });
+    const token = signToken({ userId: id, email });
     const response = NextResponse.json({
-      user: { id: result.id, fullName, email, phone, avatarUrl: avatarUrl || null },
+      user: { id, fullName, email, phone, avatarUrl: avatarUrl || null },
     });
-    response.cookies.set("auth_token", token, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
+    response.cookies.set("auth_token", token, { httpOnly: true, maxAge: 60 * 60 * 24 * 7, path: "/" });
     return response;
   } catch (err) {
     console.error(err);

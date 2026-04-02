@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, Camera } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/lib/db";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "", confirmPassword: "" });
@@ -29,13 +28,17 @@ export default function RegisterPage() {
     setAvatarPreview(URL.createObjectURL(file));
   };
 
-  const uploadAvatar = async (file: File, userId?: number): Promise<string | null> => {
-    const ext = file.name.split(".").pop();
-    const path = `avatars/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabase.storage.from("uploads").upload(path, file, { upsert: true });
-    if (error) { console.error("Avatar upload error:", error); return null; }
-    const { data } = supabase.storage.from("uploads").getPublicUrl(path);
-    return data.publicUrl;
+  const uploadAvatar = async (file: File): Promise<string | null> => {
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/shop-api/upload", { method: "POST", body: fd });
+      if (!res.ok) return null;
+      const { url } = await res.json();
+      return url;
+    } catch {
+      return null;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

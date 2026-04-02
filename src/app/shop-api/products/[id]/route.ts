@@ -1,32 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/db";
+import { db, initDb } from "@/lib/turso";
+import { ADMIN_TOKEN } from "@/lib/auth";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    await initDb();
     const adminToken = req.cookies.get("admin_token")?.value;
-    if (adminToken !== "etii_admin_session_2025") {
+    if (adminToken !== ADMIN_TOKEN) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
     const { name, price, description, discount, image, category } = await req.json();
 
-    const { data: product, error } = await supabase
-      .from("products")
-      .update({
-        name,
-        price: Number(price) * 100,
-        description: description || "",
-        discount: Number(discount) || 0,
-        image: image || "",
-        category: category || "General",
-      })
-      .eq("id", Number(id))
-      .select()
-      .single();
-
-    if (error) throw error;
-    return NextResponse.json({ product });
+    const result = await db.execute({
+      sql: "UPDATE products SET name=?, price=?, description=?, discount=?, image=?, category=? WHERE id=? RETURNING *",
+      args: [name, Number(price) * 100, description || "", Number(discount) || 0, image || "", category || "General", Number(id)],
+    });
+    return NextResponse.json({ product: result.rows[0] });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -35,14 +26,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    await initDb();
     const adminToken = req.cookies.get("admin_token")?.value;
-    if (adminToken !== "etii_admin_session_2025") {
+    if (adminToken !== ADMIN_TOKEN) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
-    const { error } = await supabase.from("products").delete().eq("id", Number(id));
-    if (error) throw error;
+    await db.execute({ sql: "DELETE FROM products WHERE id=?", args: [Number(id)] });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error(err);

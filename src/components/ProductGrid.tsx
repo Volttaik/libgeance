@@ -1,9 +1,11 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { ShoppingBag, Heart } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ShoppingBag, Heart, Eye } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import ProductModal from "./ProductModal";
+import EventCard from "./EventCard";
 
 type Product = {
   id: number;
@@ -15,23 +17,56 @@ type Product = {
   description: string;
 };
 
+type Event = {
+  id: number;
+  title: string;
+  subtitle: string;
+  description: string;
+  badge: string;
+  ctaLabel: string;
+  ctaLink: string;
+  image: string;
+  position: string;
+};
+
 export default function ProductGrid() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const { addToCart } = useCart();
 
   useEffect(() => {
     fetch("/shop-api/products")
       .then((r) => r.json())
       .then((data) => setProducts(data.products || []));
+
+    fetch("/shop-api/events")
+      .then((r) => r.json())
+      .then((data) => setEvents(data.events || []));
+
+    fetch("/shop-api/settings")
+      .then((r) => r.json())
+      .then((data) => setWhatsappNumber(data.settings?.whatsapp_number || ""));
   }, []);
 
+  const allCategories = ["All", ...Array.from(new Set(products.map((p) => p.category || "Other")))];
+
+  const filteredProducts = activeCategory === "All"
+    ? products
+    : products.filter((p) => p.category === activeCategory);
+
   const categoryMap = new Map<string, Product[]>();
-  for (const product of products) {
+  for (const product of filteredProducts) {
     const cat = product.category || "Other";
     if (!categoryMap.has(cat)) categoryMap.set(cat, []);
     categoryMap.get(cat)!.push(product);
   }
   const categories = Array.from(categoryMap.entries());
+
+  const topEvents = events.filter((e) => e.position === "top");
+  const inlineEvents = events.filter((e) => e.position === "inline");
 
   return (
     <section id="products" className="py-16">
@@ -46,9 +81,9 @@ export default function ProductGrid() {
             Shop Now
           </span>
           <span className="flex flex-col items-center gap-0.5 mt-1" aria-hidden>
-            <span className="block w-px h-3 bg-foreground/30 group-hover:bg-foreground/60 transition-colors" style={{ maskImage: "linear-gradient(to bottom, black, transparent)" }}/>
+            <span className="block w-px h-3 bg-foreground/30 group-hover:bg-foreground/60 transition-colors" style={{ maskImage: "linear-gradient(to bottom, black, transparent)" }} />
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-40 group-hover:opacity-80 transition-opacity" style={{ animation: "shopArrowBounce 1.6s ease-in-out infinite" }}>
-              <path d="M1 1L6 7L11 1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M1 1L6 7L11 1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </span>
         </a>
@@ -60,17 +95,73 @@ export default function ProductGrid() {
         `}</style>
       </div>
 
+      {/* Top events */}
+      {topEvents.length > 0 && (
+        <div className="flex flex-col gap-3 mb-6">
+          {topEvents.map((ev) => <EventCard key={ev.id} event={ev} />)}
+        </div>
+      )}
+
+      {/* Category filter pills */}
+      {allCategories.length > 2 && (
+        <div className="overflow-x-auto hide-scrollbar px-4 sm:px-6 mb-8">
+          <div className="flex gap-2" style={{ width: "max-content" }}>
+            {allCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-1.5 rounded-full text-[11px] font-semibold transition-colors border ${
+                  activeCategory === cat
+                    ? "bg-foreground text-background border-foreground"
+                    : "border-border hover:bg-secondary text-foreground/70"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Products by category with inline events */}
       <div className="flex flex-col gap-12">
         {categories.map(([cat, catProducts], catIdx) => (
-          <CategoryRow
-            key={cat}
-            category={cat}
-            products={catProducts}
-            delay={catIdx * 0.1}
-            addToCart={addToCart}
-          />
+          <div key={cat}>
+            <CategoryRow
+              category={cat}
+              products={catProducts}
+              delay={catIdx * 0.1}
+              addToCart={addToCart}
+              onView={setModalProduct}
+              whatsappNumber={whatsappNumber}
+            />
+            {/* Insert inline event after first category */}
+            {catIdx === 0 && inlineEvents[0] && (
+              <div className="mt-6">
+                <EventCard event={inlineEvents[0]} />
+              </div>
+            )}
+            {catIdx === 1 && inlineEvents[1] && (
+              <div className="mt-6">
+                <EventCard event={inlineEvents[1]} />
+              </div>
+            )}
+          </div>
+        ))}
+        {/* If there are more inline events than categories, show them at end */}
+        {inlineEvents.slice(Math.min(2, categories.length)).map((ev) => (
+          <EventCard key={ev.id} event={ev} />
         ))}
       </div>
+
+      {/* Product quick-view modal */}
+      {modalProduct && (
+        <ProductModal
+          product={modalProduct}
+          whatsappNumber={whatsappNumber}
+          onClose={() => setModalProduct(null)}
+        />
+      )}
     </section>
   );
 }
@@ -80,11 +171,13 @@ type RowProps = {
   products: Product[];
   delay: number;
   addToCart: (item: { id: number; name: string; price: number; image: string; category: string }) => void;
+  onView: (p: Product) => void;
+  whatsappNumber: string;
 };
 
 const BG_SHADES = ["bg-zinc-100", "bg-neutral-200", "bg-stone-100", "bg-gray-100", "bg-slate-100", "bg-zinc-200", "bg-neutral-100", "bg-stone-200", "bg-gray-50", "bg-slate-200"];
 
-function CategoryRow({ category, products, addToCart }: RowProps) {
+function CategoryRow({ category, products, addToCart, onView }: RowProps) {
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const half = Math.ceil(products.length / 2);
 
@@ -101,6 +194,7 @@ function CategoryRow({ category, products, addToCart }: RowProps) {
           liked={liked}
           onLike={(id) => setLiked(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; })}
           onAdd={(p) => { addToCart({ id: p.id, name: p.name, price: p.price, image: p.image, category: p.category }); toast(`${p.name} added to your bag`); }}
+          onView={onView}
           bgShades={BG_SHADES}
         />
         {products.length > half && (
@@ -109,6 +203,7 @@ function CategoryRow({ category, products, addToCart }: RowProps) {
             liked={liked}
             onLike={(id) => setLiked(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; })}
             onAdd={(p) => { addToCart({ id: p.id, name: p.name, price: p.price, image: p.image, category: p.category }); toast(`${p.name} added to your bag`); }}
+            onView={onView}
             bgShades={BG_SHADES}
           />
         )}
@@ -122,10 +217,11 @@ type ScrollRowProps = {
   liked: Set<number>;
   onLike: (id: number) => void;
   onAdd: (p: Product) => void;
+  onView: (p: Product) => void;
   bgShades: string[];
 };
 
-function ScrollRow({ products, liked, onLike, onAdd, bgShades }: ScrollRowProps) {
+function ScrollRow({ products, liked, onLike, onAdd, onView, bgShades }: ScrollRowProps) {
   return (
     <div className="overflow-x-auto hide-scrollbar px-4 sm:px-6">
       <div className="flex gap-3" style={{ width: "max-content" }}>
@@ -148,15 +244,26 @@ function ScrollRow({ products, liked, onLike, onAdd, bgShades }: ScrollRowProps)
                     Sale
                   </span>
                 )}
-                <button
-                  onClick={() => onLike(p.id)}
-                  className="absolute top-2 right-2 w-6 h-6 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-sm"
-                >
-                  <Heart className={`w-3 h-3 ${liked.has(p.id) ? "fill-foreground" : ""} text-foreground`} />
-                </button>
+                {/* Action buttons — top right */}
+                <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <button
+                    onClick={() => onView(p)}
+                    title="Quick view"
+                    className="w-6 h-6 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+                  >
+                    <Eye className="w-3 h-3 text-foreground" />
+                  </button>
+                  <button
+                    onClick={() => onLike(p.id)}
+                    title="Wishlist"
+                    className="w-6 h-6 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+                  >
+                    <Heart className={`w-3 h-3 ${liked.has(p.id) ? "fill-foreground" : ""} text-foreground`} />
+                  </button>
+                </div>
               </div>
 
-              {/* Card bottom — quality & comfort focus */}
+              {/* Card bottom */}
               <div className="mx-2 mb-2 -mt-3 relative z-10 bg-white rounded-xl border border-black/6 shadow-sm px-2.5 py-2.5 flex flex-col gap-1">
                 <p className="text-[11px] font-semibold leading-tight line-clamp-2 text-foreground">{p.name}</p>
                 <p className="text-[9px] text-muted-foreground tracking-wide uppercase font-medium">{p.category}</p>

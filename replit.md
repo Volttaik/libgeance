@@ -1,11 +1,12 @@
 # Libgeance
 
-A Next.js 15 e-commerce application for softly crafted fashion ("Libgeance — Wear Your Story"). Migrated from Vercel to Replit.
+A Next.js 15 e-commerce application for softly crafted fashion ("Libgeance — Wear Your Story").
 
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router) with TypeScript
-- **Database/Auth**: Supabase (PostgreSQL + Auth)
+- **Database**: Turso / libSQL (local SQLite via `@libsql/client`) — stored in `libgeance.db`
+- **Auth**: JWT (jsonwebtoken) + bcryptjs
 - **Styling**: Tailwind CSS v4 + Radix UI components
 - **Animation**: Framer Motion
 - **Runtime**: Node.js 20
@@ -13,22 +14,50 @@ A Next.js 15 e-commerce application for softly crafted fashion ("Libgeance — W
 ## Architecture
 
 - `src/app/` — Next.js App Router pages
-  - `src/app/shop-api/` — API routes (auth, products, categories, orders, upload)
-  - `src/app/admin/` — Admin dashboard
+  - `src/app/shop-api/` — API routes:
+    - `products/` — CRUD with search (`?q=`) and category filter (`?category=`)
+    - `categories/` — CRUD
+    - `events/` — Event card CRUD
+    - `settings/` — Store settings (WhatsApp number)
+    - `orders/` — Order management
+    - `upload/` — Local file upload (saves to `public/uploads/`)
+    - `auth/` — User auth (login, register, me, logout)
+    - `admin/` — Admin auth (login, logout)
+  - `src/app/admin/` — Admin dashboard (Products, Categories, Events, Orders, Settings tabs)
+  - `src/app/search/` — Fully functional search page
   - `src/app/checkout/` — Checkout flow
   - `src/app/login/` and `src/app/register/` — Auth pages
-- `src/components/` — Shared UI components (shadcn/ui based)
+- `src/components/` — Shared UI components
+  - `ProductGrid.tsx` — Product grid with category filter pills, eye icon quick-view, event cards
+  - `ProductModal.tsx` — Quick-view modal with full image, description, WhatsApp button, Add to Bag
+  - `EventCard.tsx` — Wide promotional banner card (90% width, 180px height)
+  - `Navbar.tsx` — Navigation
 - `src/context/` — React context providers (Cart, Auth)
-- `src/datahooks/` — Data fetching hooks
-- `src/lib/` — Utilities and Supabase client setup
-- `src/pages/` — Legacy pages directory (not-found)
+- `src/lib/` — Utilities
+  - `turso.ts` — libSQL client + `initDb()` (creates all tables on first run)
+  - `auth.ts` — JWT signing/verification, admin credentials
 
-## Environment Variables
+## Database Schema (auto-created on first run)
 
-Required secrets (set in Replit Secrets):
-- `NEXT_PUBLIC_SUPABASE_URL` — Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` — Supabase anonymous/publishable key
-- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key (server-side only, never exposed to client)
+Tables: `users`, `categories`, `products`, `orders`, `order_items`, `events`, `settings`
+
+- `events`: title, subtitle, description, badge, ctaLabel, ctaLink, image, position (top|inline), active
+- `settings`: key-value store — `whatsapp_number` for WhatsApp contact
+
+## Key Features
+
+- **Eye icon on product card** → opens `ProductModal` with full image, price, description, Add to Bag + WhatsApp button
+- **WhatsApp button** → opens wa.me link with product snapshot (name, price, image URL, description)
+- **WhatsApp number** → configured by admin in Settings tab
+- **Search** → live search by product name, description, category
+- **Category filter** → pill filter bar on homepage
+- **Event cards** → wide banner cards (90% width) placeable at top or inline between categories; managed from admin Events tab
+
+## Admin Credentials
+
+Set in `src/lib/auth.ts`:
+- Username: `admin`
+- Password: `liquid4*`
 
 ## Running the App
 
@@ -36,8 +65,8 @@ Required secrets (set in Replit Secrets):
 - **Build**: `npm run build`
 - **Start**: `npm run start` (port 5000)
 
-The workflow "Start application" runs `npm run dev` and serves on port 5000.
+No environment variables required — database is local SQLite.
 
-## Database Schema
+## Image Uploads
 
-See `supabase-schema.sql` for the full database schema.
+Uploaded images are saved to `public/uploads/` and served as static files.

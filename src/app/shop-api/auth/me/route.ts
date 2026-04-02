@@ -1,29 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/db";
+import { db, initDb } from "@/lib/turso";
 import { verifyToken } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
-  const token = req.cookies.get("auth_token")?.value;
-  if (!token) return NextResponse.json({ user: null });
+  try {
+    await initDb();
+    const token = req.cookies.get("auth_token")?.value;
+    if (!token) return NextResponse.json({ user: null });
 
-  const payload = verifyToken(token);
-  if (!payload) return NextResponse.json({ user: null });
+    const payload = verifyToken(token);
+    if (!payload) return NextResponse.json({ user: null });
 
-  const { data: user } = await supabase
-    .from("users")
-    .select("id, fullName, email, phone, avatar_url")
-    .eq("id", payload.userId)
-    .maybeSingle();
+    const result = await db.execute({
+      sql: "SELECT id, fullName, email, phone, avatar_url FROM users WHERE id=?",
+      args: [payload.userId],
+    });
+    const user = result.rows[0];
+    if (!user) return NextResponse.json({ user: null });
 
-  if (!user) return NextResponse.json({ user: null });
-
-  return NextResponse.json({
-    user: {
-      id: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      phone: user.phone,
-      avatarUrl: user.avatar_url ?? null,
-    },
-  });
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        phone: user.phone,
+        avatarUrl: user.avatar_url ?? null,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ user: null });
+  }
 }

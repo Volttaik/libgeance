@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/db";
+import { db, initDb } from "@/lib/turso";
+import { ADMIN_TOKEN } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const { data: categories, error } = await supabase
-      .from("categories")
-      .select("*")
-      .order("createdAt", { ascending: true });
-
-    if (error) throw error;
-    return NextResponse.json({ categories });
+    await initDb();
+    const result = await db.execute("SELECT * FROM categories ORDER BY createdAt ASC");
+    return NextResponse.json({ categories: result.rows });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -18,29 +15,27 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    await initDb();
     const adminToken = req.cookies.get("admin_token")?.value;
-    if (adminToken !== "etii_admin_session_2025") {
+    if (adminToken !== ADMIN_TOKEN) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { name, image } = await req.json();
-    if (!name) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
-    }
+    if (!name) return NextResponse.json({ error: "Name is required" }, { status: 400 });
 
-    const { data: category, error } = await supabase
-      .from("categories")
-      .insert({ name: name.trim(), image: image || "" })
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === "23505") {
+    try {
+      const result = await db.execute({
+        sql: "INSERT INTO categories (name, image) VALUES (?, ?) RETURNING *",
+        args: [name.trim(), image || ""],
+      });
+      return NextResponse.json({ category: result.rows[0] }, { status: 201 });
+    } catch (e: unknown) {
+      if (e instanceof Error && e.message.includes("UNIQUE constraint")) {
         return NextResponse.json({ error: "Category already exists" }, { status: 409 });
       }
-      throw error;
+      throw e;
     }
-    return NextResponse.json({ category }, { status: 201 });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

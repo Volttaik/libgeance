@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/db";
+import { db, initDb } from "@/lib/turso";
+import { ADMIN_TOKEN } from "@/lib/auth";
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    await initDb();
     const adminToken = req.cookies.get("admin_token")?.value;
-    if (adminToken !== "etii_admin_session_2025") {
+    if (adminToken !== ADMIN_TOKEN) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
-    const { error } = await supabase.from("categories").delete().eq("id", Number(id));
-    if (error) throw error;
+    await db.execute({ sql: "DELETE FROM categories WHERE id=?", args: [Number(id)] });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error(err);
