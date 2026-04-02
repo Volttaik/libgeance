@@ -38,3 +38,8 @@ channel = "stable-25_05"
 [userenv.shared]
 NEXT_PUBLIC_SUPABASE_URL = "https://xxcmngexumakstovqlya.supabase.co"
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY = "sb_publishable_0X_Q8DHYrVghDPsnNYGQiw_gBSrurCY"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["node", "./dist/index.cjs"]
+build = ["npm", "run", "build"]
