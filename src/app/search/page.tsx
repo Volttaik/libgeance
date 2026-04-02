@@ -43,7 +43,21 @@ function ProductModal({ product, whatsappNumber, onClose }: { product: Product; 
           </button>
           {whatsappNumber && (
             <a
-              href={`https://wa.me/${whatsappNumber}?text=Hi, I'm interested in ${encodeURIComponent(product.name)}`}
+              href={(() => {
+                const num = whatsappNumber.replace(/\D/g, "");
+                const imageUrl = product.image
+                  ? product.image.startsWith("http")
+                    ? product.image
+                    : `${typeof window !== "undefined" ? window.location.origin : ""}${product.image}`
+                  : "";
+                const imageNote = imageUrl ? `\n\nView image: ${imageUrl}` : "";
+                const discountedPrice = product.discount > 0 ? product.price * (1 - product.discount / 100) : null;
+                const price = `₦${((discountedPrice ?? product.price) / 100).toLocaleString("en-NG")}`;
+                const msg = encodeURIComponent(
+                  `Hi! I'm interested in this product:\n\n*${product.name}*\nCategory: ${product.category}\nPrice: ${price}${imageNote}`
+                );
+                return `https://wa.me/${num}?text=${msg}`;
+              })()}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 border border-foreground/20 rounded-xl px-4 py-3 text-sm font-semibold hover:bg-zinc-50 transition-colors"

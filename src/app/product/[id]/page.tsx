@@ -74,7 +74,12 @@ export default function ProductPage() {
     const num = whatsappNumber.replace(/\D/g, "");
     if (!num) { toast.error("WhatsApp contact not set up yet"); return; }
     const discountNote = product.discount > 0 ? `\nDiscount: ${product.discount}% off (was ${originalPrice})` : "";
-    const imageNote = product.image ? `\nImage: ${product.image}` : "";
+    const imageUrl = product.image
+      ? product.image.startsWith("http")
+        ? product.image
+        : `${window.location.origin}${product.image}`
+      : "";
+    const imageNote = imageUrl ? `\n\nView image: ${imageUrl}` : "";
     const msg = encodeURIComponent(
       `Hi! I'm interested in this product:\n\n*${product.name}*\nCategory: ${product.category}\nPrice: ${formattedPrice}${discountNote}\n\n${product.description || ""}${imageNote}`
     );
