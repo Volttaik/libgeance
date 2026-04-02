@@ -91,5 +91,13 @@ export async function initDb() {
     );
 
     INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp_number', '');
+
+    CREATE TABLE IF NOT EXISTS uploads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      filename TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      data BLOB NOT NULL,
+      createdAt TEXT DEFAULT (datetime('now'))
+    );
   `);
 }

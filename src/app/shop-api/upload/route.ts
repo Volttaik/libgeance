@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_TOKEN } from "@/lib/auth";
+import { db, initDb } from "@/lib/turso";
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
@@ -18,10 +19,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File too large (max 5 MB)" }, { status: 413 });
     }
 
+    await initDb();
+
     const bytes = await file.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString("base64");
+    const data = new Uint8Array(bytes);
     const mimeType = file.type || "image/jpeg";
-    const url = `data:${mimeType};base64,${base64}`;
+
+    const result = await db.execute({
+      sql: "INSERT INTO uploads (filename, mime_type, data) VALUES (?, ?, ?) RETURNING id",
+      args: [file.name, mimeType, data],
+    });
+
+    const id = result.rows[0].id;
+    const url = `/shop-api/images/${id}`;
 
     return NextResponse.json({ url });
   } catch (err) {
