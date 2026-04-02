@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, initDb } from "@/lib/turso";
 import { ADMIN_TOKEN } from "@/lib/auth";
 
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    await initDb();
+    const { id } = await params;
+    const result = await db.execute({ sql: "SELECT * FROM products WHERE id=?", args: [Number(id)] });
+    if (!result.rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const row = result.rows[0] as Record<string, unknown>;
+    const product = { ...row, price: Number(row.price), discount: Number(row.discount) };
+    return NextResponse.json({ product });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
+
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await initDb();

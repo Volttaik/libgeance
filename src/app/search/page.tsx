@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
-import { Search, X, ShoppingBag, Eye, MessageCircle } from "lucide-react";
+import { Search, X, ShoppingBag, Eye } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
-import ProductModal from "@/components/ProductModal";
 
 type Product = {
   id: number;
@@ -28,14 +27,6 @@ function SearchContent() {
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [whatsappNumber, setWhatsappNumber] = useState("");
-  const [modalProduct, setModalProduct] = useState<Product | null>(null);
-
-  useEffect(() => {
-    fetch("/shop-api/settings")
-      .then((r) => r.json())
-      .then((d) => setWhatsappNumber(d.settings?.whatsapp_number || ""));
-  }, []);
 
   const doSearch = useCallback(async (q: string) => {
     if (!q.trim()) { setResults([]); setSearched(false); return; }

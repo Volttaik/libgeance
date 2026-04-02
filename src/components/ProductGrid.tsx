@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { ShoppingBag, Heart, Eye } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import ProductModal from "./ProductModal";
 import EventCard from "./EventCard";
 
 type Product = {
@@ -32,10 +32,9 @@ type Event = {
 export default function ProductGrid() {
   const [products, setProducts] = useState<Product[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
-  const [whatsappNumber, setWhatsappNumber] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const { addToCart } = useCart();
+  const router = useRouter();
 
   useEffect(() => {
     fetch("/shop-api/products")
@@ -45,10 +44,6 @@ export default function ProductGrid() {
     fetch("/shop-api/events")
       .then((r) => r.json())
       .then((data) => setEvents(data.events || []));
-
-    fetch("/shop-api/settings")
-      .then((r) => r.json())
-      .then((data) => setWhatsappNumber(data.settings?.whatsapp_number || ""));
   }, []);
 
   const allCategories = ["All", ...Array.from(new Set(products.map((p) => p.category || "Other")))];
@@ -132,36 +127,20 @@ export default function ProductGrid() {
               products={catProducts}
               delay={catIdx * 0.1}
               addToCart={addToCart}
-              onView={setModalProduct}
-              whatsappNumber={whatsappNumber}
+              onView={(p) => router.push(`/product/${p.id}`)}
             />
-            {/* Insert inline event after first category */}
             {catIdx === 0 && inlineEvents[0] && (
-              <div className="mt-6">
-                <EventCard event={inlineEvents[0]} />
-              </div>
+              <div className="mt-6"><EventCard event={inlineEvents[0]} /></div>
             )}
             {catIdx === 1 && inlineEvents[1] && (
-              <div className="mt-6">
-                <EventCard event={inlineEvents[1]} />
-              </div>
+              <div className="mt-6"><EventCard event={inlineEvents[1]} /></div>
             )}
           </div>
         ))}
-        {/* If there are more inline events than categories, show them at end */}
         {inlineEvents.slice(Math.min(2, categories.length)).map((ev) => (
           <EventCard key={ev.id} event={ev} />
         ))}
       </div>
-
-      {/* Product quick-view modal */}
-      {modalProduct && (
-        <ProductModal
-          product={modalProduct}
-          whatsappNumber={whatsappNumber}
-          onClose={() => setModalProduct(null)}
-        />
-      )}
     </section>
   );
 }
@@ -172,7 +151,6 @@ type RowProps = {
   delay: number;
   addToCart: (item: { id: number; name: string; price: number; image: string; category: string }) => void;
   onView: (p: Product) => void;
-  whatsappNumber: string;
 };
 
 const BG_SHADES = ["bg-zinc-100", "bg-neutral-200", "bg-stone-100", "bg-gray-100", "bg-slate-100", "bg-zinc-200", "bg-neutral-100", "bg-stone-200", "bg-gray-50", "bg-slate-200"];
@@ -248,7 +226,7 @@ function ScrollRow({ products, liked, onLike, onAdd, onView, bgShades }: ScrollR
                 <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                   <button
                     onClick={() => onView(p)}
-                    title="Quick view"
+                    title="View product"
                     className="w-6 h-6 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors"
                   >
                     <Eye className="w-3 h-3 text-foreground" />
