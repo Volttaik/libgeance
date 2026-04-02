@@ -32,3 +32,9 @@ outputType = "webview"
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+NEXT_PUBLIC_SUPABASE_URL = "https://xxcmngexumakstovqlya.supabase.co"
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY = "sb_publishable_0X_Q8DHYrVghDPsnNYGQiw_gBSrurCY"
