@@ -24,7 +24,7 @@ function SearchContent() {
   const router = useRouter();
   const { addToCart } = useCart();
 
-  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const [query, setQuery] = useState(searchParams?.get("q") || "");
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -53,7 +53,7 @@ function SearchContent() {
   }, []);
 
   useEffect(() => {
-    const q = searchParams.get("q") || "";
+    const q = searchParams?.get("q") || "";
     setQuery(q);
     if (q) doSearch(q);
   }, [searchParams, doSearch]);
