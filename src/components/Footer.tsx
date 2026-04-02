@@ -15,8 +15,28 @@ export default function Footer() {
 
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-foreground flex items-center justify-center shadow-soft">
-            <span className="font-display font-bold text-background text-sm leading-none">LG</span>
+          <div style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.18))" }}>
+            <svg width="24" height="32" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="fl-table" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#3a3a3a"/><stop offset="100%" stopColor="#1a1a1a"/></linearGradient>
+                <linearGradient id="fl-lc" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#6a6a6a"/><stop offset="100%" stopColor="#4a4a4a"/></linearGradient>
+                <linearGradient id="fl-rc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#121212"/><stop offset="100%" stopColor="#0a0a0a"/></linearGradient>
+                <linearGradient id="fl-llc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#888888"/><stop offset="100%" stopColor="#666666"/></linearGradient>
+                <linearGradient id="fl-lrc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#444444"/><stop offset="100%" stopColor="#2a2a2a"/></linearGradient>
+                <linearGradient id="fl-pl" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#aaaaaa"/><stop offset="100%" stopColor="#888888"/></linearGradient>
+                <linearGradient id="fl-pr" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#555555"/><stop offset="100%" stopColor="#333333"/></linearGradient>
+              </defs>
+              <polygon points="150,15 65,108 235,108" fill="url(#fl-table)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.8"/>
+              <polygon points="150,15 5,195 65,108" fill="url(#fl-lc)" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8"/>
+              <polygon points="150,15 235,108 295,195" fill="url(#fl-rc)" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8"/>
+              <polygon points="65,108 5,195 150,195" fill="url(#fl-llc)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.6"/>
+              <polygon points="235,108 150,195 295,195" fill="url(#fl-lrc)" stroke="rgba(255,255,255,0.15)" strokeWidth="0.6"/>
+              <polygon points="5,195 150,395 150,195" fill="url(#fl-pl)" stroke="rgba(255,255,255,0.06)" strokeWidth="0.6"/>
+              <polygon points="150,195 150,395 295,195" fill="url(#fl-pr)" stroke="rgba(255,255,255,0.1)" strokeWidth="0.6"/>
+              <polyline points="150,15 295,195 150,395" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              <line x1="150" y1="15" x2="235" y2="108" stroke="rgba(255,255,255,0.45)" strokeWidth="1.4"/>
+              <polygon points="150,15 295,195 150,395 5,195" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="0.8"/>
+            </svg>
           </div>
           <span className="font-display font-bold text-foreground text-xl leading-none" style={{ letterSpacing: "-0.03em" }}>Libgeance</span>
         </div>

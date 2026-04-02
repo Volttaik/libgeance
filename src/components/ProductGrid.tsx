@@ -35,9 +35,29 @@ export default function ProductGrid() {
 
   return (
     <section id="products" className="py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10 anim-fade-up">
-        <p className="text-[10px] font-semibold tracking-[0.25em] uppercase text-foreground/40 mb-2">Curated for you</p>
-        <h2 className="font-display text-4xl sm:text-5xl font-light italic text-foreground">Featured Pieces</h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10 anim-fade-up flex flex-col items-start gap-4">
+        <p className="text-[10px] font-semibold tracking-[0.25em] uppercase text-foreground/40">Curated for you</p>
+        <a
+          href="#products"
+          className="inline-flex flex-col items-center gap-1 group"
+          onClick={(e) => { e.preventDefault(); document.getElementById("products")?.scrollIntoView({ behavior: "smooth" }); }}
+        >
+          <span className="inline-flex items-center gap-2 bg-foreground text-background px-7 py-3 rounded-full font-semibold text-sm hover:bg-foreground/85 transition-colors shadow-soft tracking-wide">
+            Shop Now
+          </span>
+          <span className="flex flex-col items-center gap-0.5 mt-1" aria-hidden>
+            <span className="block w-px h-3 bg-foreground/30 group-hover:bg-foreground/60 transition-colors" style={{ maskImage: "linear-gradient(to bottom, black, transparent)" }}/>
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-40 group-hover:opacity-80 transition-opacity" style={{ animation: "shopArrowBounce 1.6s ease-in-out infinite" }}>
+              <path d="M1 1L6 7L11 1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </span>
+        </a>
+        <style>{`
+          @keyframes shopArrowBounce {
+            0%, 100% { transform: translateY(0); opacity: 0.4; }
+            50% { transform: translateY(4px); opacity: 0.9; }
+          }
+        `}</style>
       </div>
 
       <div className="flex flex-col gap-12">

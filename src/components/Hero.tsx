@@ -22,12 +22,10 @@ export default function Hero() {
           {/* Brand text block */}
           <div className="flex flex-col justify-center gap-3">
 
-            {/* "Welcome to" line */}
             <p className="anim-fade-up delay-200 text-[10px] font-medium text-foreground/40 tracking-[0.22em] uppercase">
               Welcome to
             </p>
 
-            {/* "Libgeance" — unified font, large */}
             <h1
               className="anim-fade-up delay-300 font-display font-bold text-foreground leading-none"
               style={{ fontSize: "clamp(3.2rem, 11vw, 6rem)", letterSpacing: "-0.03em" }}
@@ -35,13 +33,11 @@ export default function Hero() {
               Libgeance
             </h1>
 
-            {/* Divider */}
             <div
               className="anim-expand delay-500 h-px bg-foreground/20 w-10"
               style={{ transformOrigin: "left" }}
             />
 
-            {/* Tagline */}
             <p className="anim-fade-up delay-400 font-display italic text-foreground/55 text-sm sm:text-base leading-snug">
               Wear your story.
             </p>
@@ -55,7 +51,7 @@ export default function Hero() {
             href="#products"
             className="inline-flex items-center bg-foreground text-background px-6 py-2.5 rounded-full font-semibold text-sm hover:bg-foreground/85 transition-colors shadow-soft"
           >
-            Shop Best Prices
+            Quality with Best Prices
           </a>
         </div>
 
